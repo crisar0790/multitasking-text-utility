@@ -10,8 +10,8 @@ ENV_PATH = BASE_DIR / ".env"
 load_dotenv(ENV_PATH)
 
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_TIMEOUT = os.getenv("OPENAI_TIMEOUT", 30)
-MAX_OUTPUT_TOKENS = os.getenv("MAX_OUTPUT_TOKENS", 500)
+OPENAI_TIMEOUT = float(os.getenv("OPENAI_TIMEOUT", "30"))
+MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "500"))
 
 def get_openai_client() -> OpenAI:
     """

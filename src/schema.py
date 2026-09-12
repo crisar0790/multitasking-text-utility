@@ -12,6 +12,7 @@ ALLOWED_ACTIONS = [
     "escalate_to_human",
     "report_security_issue",
     "no_action_required",
+    "other",
 ]
 
 ALLOWED_TOPICS = [
@@ -41,7 +42,10 @@ RESPONSE_SCHEMA = {
         },
         "actions": {
             "type": "array",
-            "description": "Recommended actions. Use 'no_action_required' when no action is necessary.",
+            "description": (
+                "Recommended actions. Use 'no_action_required' when no action "
+                "is necessary and 'other' when no predefined action applies."
+            ),
             "items": {
                 "type": "string",
                 "enum": ALLOWED_ACTIONS,

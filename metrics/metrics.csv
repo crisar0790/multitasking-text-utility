@@ -1,0 +1,3 @@
+timestamp,model,prompt_tokens,completion_tokens,reasoning_tokens,total_tokens,latency_ms,estimated_cost_usd
+2026-09-13T15:14:29.595599+00:00,gpt-4o-mini-2024-07-18,1298,92,0,1390,3079.93,0.0002499
+2026-09-13T15:16:46.891019+00:00,gpt-4o-mini-2024-07-18,1302,86,0,1388,3013.16,0.0002469

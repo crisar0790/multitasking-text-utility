@@ -55,6 +55,33 @@ def generate_support_response(user_query: str) -> tuple[dict[str, Any], Any]:
         store=False,
     )
 
+    if response.status != "completed":
+        incomplete_details = getattr(
+            response,
+            "incomplete_details",
+            None,
+        )
+
+        reason = getattr(
+            incomplete_details,
+            "reason",
+            response.status,
+        )
+
+        raise ValueError(
+            f"OpenAI response was not completed: {reason}"
+        )
+
+    for item in response.output:
+        if item.type != "message":
+            continue
+
+        for content in item.content:
+            if content.type == "refusal":
+                raise ValueError(
+                    "OpenAI refused to answer the query."
+                )
+
     if not response.output_text:
         raise ValueError("OpenAI returned an empty response.")
 

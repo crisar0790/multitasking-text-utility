@@ -250,7 +250,7 @@ Review the appended rows in `metrics/metrics.csv`.
 
 Actual responses, token counts, latency, and costs may vary between executions.
 
-## Safety
+## Safety controls
 
 The application implements several complementary controls:
 
@@ -277,11 +277,8 @@ Events contain:
 - Redacted query.
 
 The original query is not deliberately stored in these logs.
-However, redaction is heuristic and may leave sensitive information undetected. These logs must not be treated as anonymized data.
 
-The safety log is excluded from Git. Use fictitious data for demonstrations and manually review any example included in the report.
-
-A logging failure generates a warning without preventing a safe response from being returned.
+The repository includes safety demonstration logs generated with fictitious data. Review logs manually before committing them: heuristic redaction may leave sensitive information undetected.
 
 ### Manual safety checks
 

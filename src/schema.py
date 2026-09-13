@@ -142,4 +142,39 @@ def validate_response(data: Any) -> bool:
     if not isinstance(data["requires_human_attention"], bool):
         return False
 
+    # Topics and actions must not contain duplicates.
+    if len(set(topics)) != len(topics):
+        return False
+
+    if len(set(actions)) != len(actions):
+        return False
+
+    # Fallback values must be used alone.
+    if "other" in topics and len(topics) > 1:
+        return False
+
+    if "other" in actions and len(actions) > 1:
+        return False
+
+    if "no_action_required" in actions and len(actions) > 1:
+        return False
+
+    # Human attention and escalation must agree.
+    requires_human_attention = data["requires_human_attention"]
+    has_escalation = "escalate_to_human" in actions
+
+    if requires_human_attention != has_escalation:
+        return False
+
+    # Low-confidence responses require human review.
+    if confidence < 0.6 and not requires_human_attention:
+        return False
+
+    # Security incidents require human review.
+    if (
+        "report_security_issue" in actions
+        and not requires_human_attention
+    ):
+        return False
+
     return True

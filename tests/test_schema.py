@@ -147,3 +147,124 @@ def test_accepts_other_topic(valid_response):
     response["topics"] = ["other"]
 
     assert validate_response(response) is True
+
+@pytest.mark.parametrize(
+    "field, values",
+    [
+        (
+            "topics",
+            ["technical_support", "technical_support"],
+        ),
+        (
+            "actions",
+            [
+                "follow_troubleshooting_steps",
+                "follow_troubleshooting_steps",
+            ],
+        ),
+        (
+            "topics",
+            ["other", "account"],
+        ),
+        (
+            "actions",
+            ["other", "provide_information"],
+        ),
+        (
+            "actions",
+            [
+                "no_action_required",
+                "provide_information",
+            ],
+        ),
+    ],
+)
+def test_rejects_invalid_combinations(
+    valid_response,
+    field,
+    values,
+):
+    response = deepcopy(valid_response)
+    response[field] = values
+
+    assert validate_response(response) is False
+
+
+def test_rejects_escalation_without_human_attention(
+    valid_response,
+):
+    response = deepcopy(valid_response)
+    response["actions"] = ["escalate_to_human"]
+
+    assert validate_response(response) is False
+
+
+def test_rejects_human_attention_without_escalation(
+    valid_response,
+):
+    response = deepcopy(valid_response)
+    response["requires_human_attention"] = True
+
+    assert validate_response(response) is False
+
+
+def test_accepts_consistent_escalation(valid_response):
+    response = deepcopy(valid_response)
+    response["actions"] = [
+        "review_billing",
+        "escalate_to_human",
+    ]
+    response["requires_human_attention"] = True
+
+    assert validate_response(response) is True
+
+
+def test_rejects_low_confidence_without_escalation(
+    valid_response,
+):
+    response = deepcopy(valid_response)
+    response["confidence"] = 0.5
+
+    assert validate_response(response) is False
+
+
+def test_accepts_low_confidence_with_escalation(
+    valid_response,
+):
+    response = deepcopy(valid_response)
+    response["confidence"] = 0.5
+    response["actions"] = ["escalate_to_human"]
+    response["requires_human_attention"] = True
+
+    assert validate_response(response) is True
+
+
+def test_accepts_confidence_at_threshold(valid_response):
+    response = deepcopy(valid_response)
+    response["confidence"] = 0.6
+
+    assert validate_response(response) is True
+
+
+def test_rejects_security_incident_without_escalation(
+    valid_response,
+):
+    response = deepcopy(valid_response)
+    response["topics"] = ["security"]
+    response["actions"] = ["report_security_issue"]
+
+    assert validate_response(response) is False
+
+
+def test_accepts_security_incident_with_escalation(
+    valid_response,
+):
+    response = deepcopy(valid_response)
+    response["topics"] = ["security"]
+    response["actions"] = [
+        "report_security_issue",
+        "escalate_to_human",
+    ]
+    response["requires_human_attention"] = True
+
+    assert validate_response(response) is True

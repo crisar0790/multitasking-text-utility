@@ -100,7 +100,7 @@ def build_metrics(response: Any, latency_ms: float) -> dict[str, Any]:
         None,
     )
 
-    estimated_cost = calculate_stimated_cost(
+    estimated_cost = calculate_estimated_cost(
         model=response.model,
         prompt_tokens=usage.input_tokens,
         completion_tokens=usage.output_tokens,

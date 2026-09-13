@@ -10,18 +10,26 @@ from src.config import BASE_DIR
 DEFAULT_SAFETY_LOG_PATH = BASE_DIR / "metrics" / "safety_events.jsonl"
 
 MANIPULATION_PATTERNS = (
+    # Spanish
     "ignora las instrucciones",
     "ignora todas las instrucciones",
-    "ignore previous instructions",
-    "ignore all previous",
-    "system override",
+    "ignora las instrucciones anteriores",
     "olvida tus reglas",
     "olvida tu tarea",
     "prompt de sistema",
-    "system prompt",
     "modo desarrollador",
-    "developer mode",
     "sin restricciones",
+
+    # English
+    "ignore previous instructions",
+    "ignore all previous",
+    "ignore the previous instructions",
+    "disregard previous instructions",
+    "forget your rules",
+    "system override",
+    "system prompt",
+    "developer mode",
+    "without restrictions",
 )
 
 # These patterns are heuristic and do not cover all sensitive data.

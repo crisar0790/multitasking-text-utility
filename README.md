@@ -25,7 +25,7 @@ OpenAI API usage may incur charges.
 ## Project structure
 
 - `src/config.py`: environment configuration and OpenAI client creation.
-- `src/schemas.py`: JSON schema and local response validation.
+- `src/schema.py`: JSON schema and local response validation.
 - `src/prompt_loader.py`: prompt file loading.
 - `src/openai_service.py`: API integration and response handling.
 - `src/metrics_service.py`: metric construction and CSV persistence.
@@ -33,7 +33,7 @@ OpenAI API usage may incur charges.
 - `src/run_query.py`: CLI entry point.
 - `prompts/main_prompt.md`: instructions and few-shot examples.
 - `metrics/metrics.csv`: execution metrics.
-- `metrics/safety_events.jsonl`: generated local safety log, excluded from Git.
+- `metrics/safety_events.jsonl`: generated local safety log.
 - `tests/`: automated schema and metrics tests.
 - `reports/PI_report_en.md`: project report.
 

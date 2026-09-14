@@ -12,13 +12,13 @@ load_dotenv(ENV_PATH)
 
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_TIMEOUT = float(os.getenv("OPENAI_TIMEOUT", "30"))
-MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "500"))
+MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "250"))
 
 def get_openai_temperature() -> float | None:
     """
     Read temperature, or omit it when explicitly left blank.
     """
-    raw_value = os.getenv("OPENAI_TEMPERATURE", "0.2").strip()
+    raw_value = os.getenv("OPENAI_TEMPERATURE", "0").strip()
 
     if not raw_value:
         return None

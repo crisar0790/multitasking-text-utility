@@ -7,7 +7,7 @@ This project implements a Python CLI assistant for customer support. It accepts 
 Responsibilities are separated into modules:
 
 - `config.py`: environment configuration and client creation.
-- `schemas.py`: response contract and local validation.
+- `schema.py`: response contract and local validation.
 - `prompt_loader.py`: loading the external prompt.
 - `safety.py`: input analysis, sensitive data redaction, and fallback.
 - `openai_service.py`: API integration and response validation.
@@ -31,11 +31,25 @@ Confidence below 0.6 requires human attention. This value represents a model-pro
 
 Structured output improves integration reliability, but a valid JSON response can still contain incorrect information.
 
+### Prompt iteration and challenges
+
+Development used few-shot prompting without a controlled zero-shot comparison. No claim of superiority over zero-shot is therefore made.
+
+An earlier password-recovery example recommended `check_account_details`. The recorded model response repeated that choice. The example was changed to `provide_information`, which appeared in all subsequent password-recovery executions evaluated here. This is consistent with example influence, although it does not establish causality through a controlled experiment.
+
+Safety instructions were also added during development. Earlier CSV records contained approximately 1298–1302 input tokens, while later records contained approximately 1493–1503. This is consistent with prompt growth, but queries also differed between those records.
+
+A connection failure was traced to a timeout read as a string. Converting the environment value to a numeric type resolved the issue.
+
+Remaining challenges include semantic alignment between actions and answer text, and escalation when declining unsafe requests. The evaluation results below describe the prompt as tested, before any further corrections to those remaining issues.
+
 ## 3. Recorded executions and metrics
 
 Five Spanish-language queries were executed on 13 September 2026, between 23:16 and 23:17 UTC, using `gpt-4o-mini-2024-07-18`.
 
-The following measurements correspond to the final five CSV records, matched to the queries by execution order and timestamps.
+The following measurements correspond to the five executions recorded on 13 September 2026 between 23:16 and 23:17 UTC, matched to the queries by execution order and timestamps.
+
+These historical executions used a 500-token output limit without an explicitly configured temperature. They precede the revised password-recovery example and the subsequent parameter evaluation.
 
 | Query | Input tokens | Output tokens | Total tokens | Reasoning tokens | Latency ms | Estimated USD |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -65,9 +79,72 @@ The duplicate charge was classified as `billing` and `complaints`, with confiden
 
 The application crash was classified as `technical_support`, with confidence 0.85. The response suggested troubleshooting and included `request_more_information`, although the answer did not actually ask a follow-up question.
 
-These results reveal opportunities to improve semantic alignment: password recovery guidance could use `provide_information`, and an information-request action should be reflected in the answer.
+These historical results motivated the password-recovery example correction to `provide_information`. They also showed that recommended actions should be reflected explicitly in the answer text.
 
 This small sample is not a performance or accuracy benchmark.
+
+### Parameter evaluation — 14 September 2026
+
+The following comparisons comprise 58 additional API executions. The prompt was kept fixed across these comparisons.
+
+#### Temperature
+
+The same five queries were executed twice at each temperature using `gpt-4o-mini-2024-07-18`, a 500-token output limit, and a 30-second timeout.
+
+| Temperature | Executions | Mean output tokens | Mean latency ms | Mean estimated USD |
+| --- | ---: | ---: | ---: | ---: |
+| 0 | 10 | 81.9 | 1984.48 | 0.00027228 |
+| 0.2 | 10 | 84.5 | 2074.27 | 0.00027384 |
+| 0.7 | 10 | 81.4 | 1863.34 | 0.00027198 |
+
+Temperature 0 preserved actions, topics, confidence, and the human-attention flag across both repetitions of all five queries. Wording still varied. It was selected for observed structured-field stability, not because it guarantees deterministic or correct output.
+
+Cost differences were small. Sequential execution and the small sample prevent attributing latency differences to temperature.
+
+#### Output limit
+
+Two multi-issue queries were executed twice per limit using GPT-4o Mini, temperature 0, and a 30-second timeout.
+
+| Output limit | Completed executions | Mean output tokens | Maximum output tokens | Mean latency ms | Mean estimated USD |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 250 | 4/4 | 114 | 127 | 2127.46 | 0.00029430 |
+| 500 | 4/4 | 113 | 123 | 2012.10 | 0.00029370 |
+
+Both limits produced complete JSON with equivalent classifications and similar content. The 250-token limit was selected because it was sufficient for the evaluated cases; 500 showed no meaningful content advantage.
+
+Reducing the limit did not reduce observed cost. Estimates depend on actual token usage, not the configured maximum.
+
+#### Model comparison
+
+Five queries were executed twice per model with temperature 0, an output limit of 250, and a 30-second timeout.
+
+| Model snapshot | Executions | Mean output tokens | Mean latency ms | Mean estimated USD |
+| --- | ---: | ---: | ---: | ---: |
+| `gpt-4o-mini-2024-07-18` | 10 | 82.3 | 2235.60 | 0.00027252 |
+| `gpt-4.1-mini-2025-04-14` | 10 | 65.8 | 2343.56 | 0.00070032 |
+
+Both models returned JSON and handled password recovery and duplicate billing with appropriate actions.
+
+GPT-4o Mini escalated the unknown return-policy question in both repetitions. GPT-4.1 Mini requested additional information without escalating and referred to "our website" without provided company context.
+
+Both models included troubleshooting actions without concrete steps and omitted the prompt-required escalation in the adversarial refusal.
+
+GPT-4o Mini was retained because it better matched the expected return-policy escalation and had a lower estimated cost. GPT-4.1 Mini cost approximately 2.57 times as much per execution in this sample, despite generating fewer output tokens.
+
+These findings apply to this prompt and sample, not to general model quality.
+
+#### Timeout and selected configuration
+
+The longest observed execution across the 58 evaluation calls was 3949.21 ms. A 30-second request timeout was retained as a conservative margin rather than an experimentally optimized value.
+
+Recorded latency includes local processing, and SDK retries may extend overall execution time. No slow-network or timeout-failure experiment was performed.
+
+Selected configuration:
+
+- Model: `gpt-4o-mini-2024-07-18`.
+- Temperature: `0`.
+- Maximum output tokens: `250`.
+- Request timeout: `30` seconds.
 
 ## 4. Safety controls and observed results
 
@@ -112,6 +189,16 @@ Safety logs contain redacted queries to support investigation. The repository in
 
 Redaction is heuristic, not complete anonymization. Logs must be manually reviewed before publication because undetected sensitive information may remain.
 
+### Additional adversarial evaluations
+
+The temperature comparison included six adversarial executions, and the model comparison included four.
+
+All ten visible responses preserved JSON and did not disclose internal instructions. Input events recognized the same manipulation phrases and continued with the sanitized query.
+
+None of these responses included the human escalation required by the safety instructions. They passed local validation because the validator does not infer whether the answer is a refusal.
+
+No native `model_refusal` event was recorded for these evaluations. The local native-refusal fallback therefore remains unverified by the submitted execution evidence.
+
 ## 5. Tests, limitations, and improvements
 
 The supplied pytest execution completed successfully:
@@ -119,6 +206,8 @@ The supplied pytest execution completed successfully:
 ```text
 61 passed in 0.32s
 ```
+
+This test result belongs to the earlier recorded test run. The subsequent parameter evaluations were manual API executions, not additional automated tests.
 
 Existing automated tests cover local schema validation and metric processing. API behavior and safety were evaluated manually through the supplied executions.
 
@@ -134,3 +223,11 @@ prompts, validation, and metrics. Important limitations remain:
 - Local file persistence is intended for sequential execution.
 
 Priorities for improvement include aligning actions with answer text, clarifying refusal escalation behavior, expanding adversarial evaluation, and defining log access controls and retention policies.
+
+## 6. AI assistance during development
+
+ChatGPT/Codex assisted with project structure, implementation guidance, evaluation planning, and interpretation of recorded results.
+
+This assistance informed development decisions. Parameter-selection
+claims in this report are based on the submitted execution evidence,
+and observed limitations are retained rather than presented as resolved.

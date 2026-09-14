@@ -81,9 +81,10 @@ Edit `.env` and provide your API key:
 
 ```dotenv
 OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-4o-mini-2024-07-18
 OPENAI_TIMEOUT=30
-MAX_OUTPUT_TOKENS=500
+MAX_OUTPUT_TOKENS=250
+OPENAI_TEMPERATURE=0
 ```
 
 Never commit your real API key or `.env` file.
@@ -93,13 +94,36 @@ Never commit your real API key or `.env` file.
 | Variable | Description | Default |
 | --- | --- | --- |
 | `OPENAI_API_KEY` | OpenAI API credential | Required |
-| `OPENAI_MODEL` | Model used for generation | `gpt-4o-mini` |
+| `OPENAI_MODEL` | Model used for generation | `gpt-4o-mini-2024-07-18` |
 | `OPENAI_TIMEOUT` | Request timeout in seconds | `30` |
-| `MAX_OUTPUT_TOKENS` | Maximum generated tokens | `500` |
+| `MAX_OUTPUT_TOKENS` | Maximum generated tokens | `250` |
+| `OPENAI_TEMPERATURE` | Sampling temperature; leave blank to omit | `0` |
 
 Environment variable values are strings. The application converts the timeout to `float` and the token limit to `int`.
 
 When changing models, verify that the model supports the API features used by this application and that its pricing is configured in `src/metrics_service.py`.
+
+### Parameter evaluation
+
+The configuration was selected through 58 API executions using a fixed prompt within each comparison:
+
+- 30 executions comparing temperatures 0, 0.2, and 0.7.
+- 8 executions comparing output limits of 250 and 500 tokens.
+- 20 executions comparing GPT-4o Mini and GPT-4.1 Mini.
+
+Temperature 0 preserved actions, topics, confidence, and the human-attention flag across both repetitions of all five queries in the temperature comparison. Wording still varied.
+
+In the output-limit comparison, all four executions with a limit of 250 completed successfully. Increasing the limit to 500 showed no meaningful content improvement. The subsequent model comparison also completed all twenty executions with a limit of 250.
+
+This does not establish that 250 is sufficient for every possible query.
+
+GPT-4o Mini was retained because it had a lower estimated cost and better matched the expected escalation behavior for the unknown return-policy question in this sample.
+
+The longest observed execution was 3.95 seconds. A 30-second request timeout was retained as a conservative operational margin, not an experimentally optimized threshold. SDK retries may extend total execution time beyond the request timeout.
+
+These are small, sequential comparisons, not a general benchmark. See `reports/PI_report_en.md` for measurements and observed limitations.
+
+Temperature support depends on the selected model. Leave `OPENAI_TEMPERATURE` explicitly blank to omit the parameter.
 
 ## Usage
 
@@ -342,6 +366,9 @@ If the metrics file has an incompatible header, the application reports an error
 - CSV and JSONL persistence are intended for sequential local execution, not concurrent production workloads.
 - Model prices must be reviewed when changing models or pricing.
 - The application uses no company knowledge base or account integration.
+- The evaluated prompt sometimes recommends troubleshooting without including concrete troubleshooting steps in the answer.
+- Structured refusals did not consistently follow the prompt's human-escalation instruction in the evaluated cases.
+- Parameter and model comparisons used a small sample and do not establish statistically significant performance differences.
 
 ## Report
 

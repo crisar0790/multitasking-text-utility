@@ -6,6 +6,7 @@ from typing import Any
 from src.config import (
     MAX_OUTPUT_TOKENS,
     OPENAI_MODEL,
+    get_openai_temperature,
     get_openai_client,
 )
 
@@ -58,8 +59,15 @@ def generate_support_response(user_query: str) -> tuple[dict[str, Any], Any]:
         except OSError:
             logger.warning("Could not save the input safety event.")
 
+    temperature = get_openai_temperature()
+
     client = get_openai_client()
     prompt = load_prompt()
+
+    optional_parameters: dict[str, Any] = {}
+
+    if temperature is not None:
+        optional_parameters["temperature"] = temperature
 
     response = client.responses.create(
         model=OPENAI_MODEL,
@@ -75,6 +83,7 @@ def generate_support_response(user_query: str) -> tuple[dict[str, Any], Any]:
             }
         },
         store=False,
+        **optional_parameters,
     )
 
     if response.status != "completed":

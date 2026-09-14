@@ -370,6 +370,7 @@ If the metrics file has an incompatible header, the application reports an error
 - Structured refusals did not consistently follow the prompt's human-escalation instruction in the evaluated cases.
 - Parameter and model comparisons used a small sample and do not establish statistically significant performance differences.
 
-## Report
+## Reports
 
-See `reports/PI_report_en.md` for architecture, prompting decisions, recorded execution results, safety examples, and trade-offs.
+- [Project report](reports/PI_report_en.md): architecture, prompting, parameter decisions, safety findings, and limitations.
+- [Evaluation details](reports/evaluation_details.md): methodology, recorded measurements, comparisons, and supporting execution evidence.

@@ -3,7 +3,6 @@ from typing import Any
 ALLOWED_ACTIONS = [
     "provide_information",
     "request_more_information",
-    "request_more_information",
     "follow_troubleshooting_steps",
     "check_account_details",
     "check_order_status",
@@ -54,7 +53,7 @@ RESPONSE_SCHEMA = {
         "topics": {
             "type": "array",
             "description": (
-                "Topics detected in the query. User 'other' when the query "
+                "Topics detected in the query. Use 'other' when the query "
                 "does not match any predefined topic."
             ),
             "items": {
@@ -65,7 +64,7 @@ RESPONSE_SCHEMA = {
         "requires_human_attention": {
             "type": "boolean",
             "description": (
-                "Indicates whetger the query should be reviewed "
+                "Indicates whether the query should be reviewed "
                 "by a human support agent."
             ),
         },

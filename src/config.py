@@ -39,18 +39,18 @@ def get_openai_temperature() -> float | None:
 
 def get_openai_client() -> OpenAI:
     """
-    Crea y devuelve el cliente de OpenAI.
+    Creates and returns the OpenAI client.
 
     Raises:
-        ValueError: Si OPENAI_API_KEY no está configurada.
+        ValueError: If OPENAI_API_KEY is not set.
     """
 
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
         raise ValueError(
-            "OPENAI_API_KEY no está configurada. "
-            "Crea el archivo .env basándote en .env.example."
+            "OPENAI_API_KEY is not set. "
+            "Create the .env file based on .env.example."
         )
 
     if not math.isfinite(OPENAI_TIMEOUT) or OPENAI_TIMEOUT <= 0:

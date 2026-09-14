@@ -107,7 +107,7 @@ Expected response:
   "answer": "Use the password recovery option on the sign-in page and follow the instructions sent to your registered email address.",
   "confidence": 0.95,
   "actions": [
-    "check_account_details"
+    "provide_information"
   ],
   "topics": [
     "account"
